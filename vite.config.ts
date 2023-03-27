@@ -7,7 +7,7 @@ export default defineConfig({
   build: {
     minify: true,
     lib: {
-      entry: 'src/MessagePipe.ts',
+      entry: 'src/WindowPipe.ts',
       name: 'window-pipe',
     },
     rollupOptions: {
