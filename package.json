@@ -3,7 +3,7 @@
   "repository": {
     "url": "https://github.com/it-xtech-dev/message-pipe"
   },
-  "version": "0.1.3",
+  "version": "0.1.4",
   "type": "module",
   "main": "dist/message-pipe.js",
   "module": "dist/message-pipe.umd.cjs",
