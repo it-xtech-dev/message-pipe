@@ -12,6 +12,12 @@
     "dist/*",
     "src/*"
   ],
+  "exports": {
+    ".": {
+      "import": "./dist/window-pipe.umd.cjs",
+      "require": "./dist/window-pipe.umd.cjs"
+    }
+  },  
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",
