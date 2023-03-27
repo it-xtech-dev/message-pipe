@@ -1,2 +1,2 @@
 # message-pipe
-Browser window to window two way confirmed symmetric communication based on window.postMessage. 
+Browser window to window two-way communication based on window.postMessage.
