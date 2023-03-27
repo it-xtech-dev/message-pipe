@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import MessagePipe from '../MessagePipe';
+import Pipe from '../WindowPipe';
 import LogList from './LogList.vue';
 
 const message = ref<string>('')
 const logList = ref<string[]>([])
 const targetOrigin = `${window.location.protocol}//${window.location.host}`;
 
-const pipe: MessagePipe = new MessagePipe(window.parent, targetOrigin, 'MY-PIPE');
+const pipe: Pipe = new Pipe(window.parent, targetOrigin, 'MY-PIPE');
 pipe.onLog = (log) => {
   const now = new Date();
   const timestamp = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}.${String(now.getMilliseconds()).padStart(3, '0')}`;

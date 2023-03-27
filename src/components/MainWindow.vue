@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import MessagePipe from '../MessagePipe';
+import Pipe from '../WindowPipe';
 import LogList from './LogList.vue';
 
 const message = ref<string>('')
 const logList = ref<string[]>([])
 
-const pipe: MessagePipe = new MessagePipe();
+const pipe: Pipe = new Pipe();
 const init = (frame: HTMLIFrameElement) => {
   pipe.targetOrigin = frame.src
   pipe.targetWindow = frame.contentWindow!

@@ -1,12 +1,12 @@
 {
-  "name": "window-message-pipe",
+  "name": "window-pipe",
   "repository": {
     "url": "https://github.com/it-xtech-dev/message-pipe"
   },
-  "version": "0.1.4",
+  "version": "0.0.1",
   "type": "module",
-  "main": "dist/message-pipe.js",
-  "module": "dist/message-pipe.umd.cjs",
+  "main": "dist/window-pipe.js",
+  "module": "dist/window-pipe.umd.cjs",
   "types": "src/types/index.d.ts",
   "files": [
     "dist/*",
