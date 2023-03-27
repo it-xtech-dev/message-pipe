@@ -3,7 +3,7 @@
   "repository": {
     "url": "https://github.com/it-xtech-dev/message-pipe"
   },
-  "version": "0.0.2",
+  "version": "0.0.3",
   "type": "module",
   "main": "dist/window-pipe.js",
   "module": "dist/window-pipe.umd.cjs",
@@ -17,7 +17,7 @@
       "import": "./dist/window-pipe.umd.cjs",
       "require": "./dist/window-pipe.umd.cjs"
     }
-  },  
+  },
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",
