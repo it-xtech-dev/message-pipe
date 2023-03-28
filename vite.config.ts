@@ -11,6 +11,9 @@ export default defineConfig({
       name: 'window-pipe',
       formats: ['cjs', 'umd']
     },
+    commonjsOptions: {
+      transformMixedEsModules: true
+    },    
     rollupOptions: {
       output: {
         exports: 'named',
