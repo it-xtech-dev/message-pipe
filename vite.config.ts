@@ -5,10 +5,11 @@ import vue from '@vitejs/plugin-vue'
 export default defineConfig({
   plugins: [vue()],
   build: {
+    target: 'es2019',
     minify: true,
     lib: {
       entry: 'src/WindowPipe.ts',
-      name: 'window-pipe',
+      name: 'WindowPipe',
       formats: ['cjs','umd','es'],
       fileName: (format) => `window-pipe.${format}.js`
     },
