@@ -3,10 +3,10 @@
   "repository": {
     "url": "https://github.com/it-xtech-dev/message-pipe"
   },
-  "version": "0.1.6",
+  "version": "0.1.7",
   "type": "module",
   "main": "dist/window-pipe.js",
-  "module": "dist/window-pipe.cjs",
+  "module": "dist/window-pipe.es.js",
   "types": "src/types/index.d.ts",
   "files": [
     "dist/*",
@@ -14,8 +14,8 @@
   ],
   "exports": {
     ".": {
-      "import": "./dist/window-pipe.cjs",
-      "require": "./dist/window-pipe.cjs"
+      "import": "./dist/window-pipe.es.js",
+      "require": "./dist/window-pipe.umd.js"
     }
   },
   "scripts": {

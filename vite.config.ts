@@ -9,15 +9,12 @@ export default defineConfig({
     lib: {
       entry: 'src/WindowPipe.ts',
       name: 'window-pipe',
-      formats: ['cjs', 'umd']
+      fileName: (format) => `window-pipe.${format}.js`
     },
-    commonjsOptions: {
-      transformMixedEsModules: true
-    },    
-    rollupOptions: {
-      output: {
-        exports: 'named',
-      },
-    },
+    // rollupOptions: {
+    //   output: {
+    //     exports: 'named',
+    //   },
+    // },
   },  
 })
