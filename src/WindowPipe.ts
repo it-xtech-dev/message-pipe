@@ -234,7 +234,7 @@ export default class MessagePipe {
    * Sends message immediately to targetWindow.
    * @param {object} command - the command object.
    * */
-  _sendNow(request: PipeRequest) {
+  private _sendNow(request: PipeRequest) {
     const payload = JSON.stringify(request);
     this._targetWindow?.postMessage(payload, this._targetOrigin!);
     request.isSent = true;

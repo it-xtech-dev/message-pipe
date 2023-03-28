@@ -9,6 +9,7 @@ export default defineConfig({
     lib: {
       entry: 'src/WindowPipe.ts',
       name: 'window-pipe',
+      formats: ['cjs', 'umd']
     },
     rollupOptions: {
       output: {
