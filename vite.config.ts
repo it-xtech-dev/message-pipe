@@ -9,12 +9,13 @@ export default defineConfig({
     lib: {
       entry: 'src/WindowPipe.ts',
       name: 'window-pipe',
+      formats: ['cjs','umd','es'],
       fileName: (format) => `window-pipe.${format}.js`
     },
-    // rollupOptions: {
-    //   output: {
-    //     exports: 'named',
-    //   },
-    // },
+    rollupOptions: {
+      output: {
+        exports: 'named',
+      },
+    },
   },  
 })
