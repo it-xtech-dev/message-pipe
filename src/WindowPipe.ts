@@ -6,6 +6,7 @@ export default class MessagePipe {
   private _isConnecting: boolean = false;
   private _connectedStartedOn?: Date;
   private _connectionTimer: number = 0;
+  private _flushTimer: number = 0;
   private _connectionErrorStack: Error[] = [];
   private _requestQueue: Map<string, PipeRequest> = new Map();
   private _listener = (event: MessageEvent) => {
@@ -106,13 +107,12 @@ export default class MessagePipe {
           );
           this._sendNow(hiRequest);
         }
-        // when any message received set connected flag and raise connected event.
-        if (this._isConnected === false && this.onConnected)
-          this.onConnected(this);
+        // CONNECTED!
+        // when any message received set connected flag.
         this._isConnected = true;
         this._isConnecting = false;
         this._logNow({
-          message: `Pipe ${window.location.href} connected with ${event.origin}`
+          message: `Pipe ${window.location.href} received handshake form ${event.origin}`
         })
       } else {
         if (!this._isConnected) {
@@ -121,13 +121,9 @@ export default class MessagePipe {
               "Received payload message before connection was established!",
             data: event,
           });
-        }
-        if (cmd.method === ":>response") {
+        } else if (cmd.method === ":>response") {
           this._processResponse(new PipeResponse(request));
-          return
-        }
-
-        if (typeof this.onReceived === "function") {
+        } else if (typeof this.onReceived === "function") {
           const received = new PipeReceivedCommand(request, this);
           // when non 'hello' message received process payload.
           this.onReceived(received);
@@ -185,10 +181,20 @@ export default class MessagePipe {
             `Connection timeout! Target origin ('${this._targetOrigin}') did not responded with "hello" message.`
           );
         } else if (this._isConnected) {
+          // CONNECTED!
           // when 'hello' message received from other side _isConnected flag will be set and connection process can be terminated.
           clearInterval(this._connectionTimer);
+
           // all queued messges will be processed now as connection is establised:
           this._requestQueue.forEach((request) => this._sendNow(request));
+
+          // start request queue flush timer
+          this._flushTimer = setInterval(() => this._flushRequestQueue(), 1000)
+
+          // call connected callback
+          if (this.onConnected) this.onConnected(this);
+
+          // resolve connected promise
           resolve(true);
         } else {
           // send 'hello' message until other side hello received.
@@ -231,6 +237,7 @@ export default class MessagePipe {
   _sendNow(request: PipeRequest) {
     const payload = JSON.stringify(request);
     this._targetWindow?.postMessage(payload, this._targetOrigin!);
+    request.isSent = true;
     this._logNow({
       message: `Sending message ${request.requestId} (${request.command.method})`,
       data: {
@@ -294,9 +301,15 @@ export default class MessagePipe {
   }
 
   private _flushRequestQueue() {
+    console.log(Array.from(this._requestQueue))
+    if (this._requestQueue.size === 0) return
     this._requestQueue.forEach((r) => {
       const now = new Date();
-      if ((r.isSent && r.isResponded) || (r.willTimeoutOn ?? now) < now)
+      if (r.willTimeoutOn && r.willTimeoutOn <= now) {
+        r.responseReject(`Request (${r.requestId}) response timeout reached!`)
+        r.isTimeouted = true
+      }
+      if ((r.isSent && r.isResponded) || r.isTimeouted)
         this._requestQueue.delete(r.requestId);
     });
   }
@@ -307,10 +320,11 @@ export default class MessagePipe {
   }
 
   /**
-   * Releases pipe resources.
+   * Deconstruct pipe and releases its resources.
    * */
   dispose() {
     clearInterval(this._connectionTimer);
+    clearInterval(this._flushTimer);
     window.removeEventListener("message", this._listener, false);
     this._connectionErrorStack = [];
     this._targetWindow = null;
@@ -322,6 +336,7 @@ export interface PipeCommand {
   method: string;
   params?: Record<string, any>;
   requestId?: string | null;
+  timeout?: number;
 }
 
 class PipeReceivedCommand implements PipeCommand {
@@ -354,7 +369,7 @@ class PipeRequest {
   command: PipeCommand;
   requestId: string = getRequestId();
   responseResolve: (data: any) => void = () => {};
-  responseReject: (error: Error) => void = () => {};
+  responseReject: (error: string) => void = () => {};
   promise: Promise<any>;
   isSent?: boolean;
   isResponded?: boolean;
@@ -363,14 +378,14 @@ class PipeRequest {
 
   constructor(command: PipeCommand, pipe: MessagePipe) {
     this.command = command;
-    if (command.requestId === null) {
+    if (command.timeout === 0) {
       // when requestId in command is set to null it is assumed that request does not awaits for response so it should be marked as responded immediatly and resolved
       this.isResponded = true;
       this.willTimeoutOn = undefined;
       this.promise = Promise.resolve();
       return;
     }
-    this.willTimeoutOn = new Date(new Date().getTime() + pipe.timeout);
+    this.willTimeoutOn = new Date(new Date().getTime() + (command.timeout ?? pipe.timeout));
     // use command level defined id or autogenerate when not specified
     this.requestId = command.requestId ?? getRequestId();
     this.promise = new Promise((resolve, reject) => {

@@ -45,8 +45,9 @@ const sendMessage = (text: string) => {
   pipe.send({
     method: 'message',
     params: {
-      text: text
-    }
+      text
+    },
+    timeout: 0
   })
   message.value = ''
 }
