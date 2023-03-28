@@ -3,7 +3,7 @@
   "repository": {
     "url": "https://github.com/it-xtech-dev/message-pipe"
   },
-  "version": "0.1.4",
+  "version": "0.1.5",
   "type": "module",
   "main": "dist/window-pipe.js",
   "module": "dist/window-pipe.cjs",
@@ -25,11 +25,9 @@
     "packme": "rimraf ./packed/* && npm pack --pack-destination ./packed",
     "preview": "vite preview"
   },
-  "dependencies": {
-    "vue": "^3.2.47",
-    "vue-router": "^4.1.6"
-  },
   "devDependencies": {
+    "vue": "^3.2.47",
+    "vue-router": "^4.1.6",    
     "@vitejs/plugin-vue": "^4.1.0",
     "rimraf": "^4.4.1",
     "typescript": "^4.9.3",
