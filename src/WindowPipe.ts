@@ -301,7 +301,7 @@ export default class MessagePipe {
   }
 
   private _flushRequestQueue() {
-    console.log(Array.from(this._requestQueue))
+    // console.log(Array.from(this._requestQueue))
     if (this._requestQueue.size === 0) return
     this._requestQueue.forEach((r) => {
       const now = new Date();
