@@ -55,7 +55,7 @@ export default class MessagePipe {
     targetWindow?: Window,
     targetOrigin?: string,
     authKey?: string,
-    timeout: number = 5000
+    timeout: number = 10
   ) {
     if (targetWindow) this._targetWindow = targetWindow;
     if (targetOrigin) this._targetOrigin = targetOrigin;
@@ -385,7 +385,7 @@ class PipeRequest {
       this.promise = Promise.resolve();
       return;
     }
-    this.willTimeoutOn = new Date(new Date().getTime() + (command.timeout ?? pipe.timeout));
+    this.willTimeoutOn = new Date(new Date().getTime() + (command.timeout ?? pipe.timeout)* 1000);
     // use command level defined id or autogenerate when not specified
     this.requestId = command.requestId ?? getRequestId();
     this.promise = new Promise((resolve, reject) => {
