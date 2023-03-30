@@ -1,16 +1,16 @@
 export default class MessagePipe {
-  private _targetWindow: Window | null = null;
-  private _targetOrigin: string | null = null;
-  private _authKey: string | null = null;
-  private _isConnected: boolean = false;
-  private _isConnecting: boolean = false;
-  private _connectedStartedOn?: Date;
-  private _connectionTimer: number = 0;
-  private _flushTimer: number = 0;
-  private _connectionErrorStack: Error[] = [];
-  private _requestQueue: Map<string, PipeRequest> = new Map();
-  private _listener = (event: MessageEvent) => {
-    this._listenerInner(event);
+  #targetWindow: Window | null = null;
+  #targetOrigin: string | null = null;
+  #authKey: string | null = null;
+  #isConnected: boolean = false;
+  #isConnecting: boolean = false;
+  #connectedStartedOn?: Date;
+  #connectionTimer: number = 0;
+  #flushTimer: number = 0;
+  #connectionErrorStack: Error[] = [];
+  #requestQueue: Map<string, PipeRequest> = new Map();
+  #listener = (event: MessageEvent) => {
+    this.#listenerInner(event);
   };
   timeout: number;
 
@@ -20,35 +20,40 @@ export default class MessagePipe {
   public onLog: ((logItem: LogItem) => void) | null = null;
 
   public set targetOrigin(url: string) {
-    if (this._isConnected || this._isConnecting) {
+    if (this.#isConnected || this.#isConnecting) {
       throw new Error(
         "targetOrigin cannot be set while conneting or already connected."
       );
     }
-    this._targetOrigin = url;
+    this.#targetOrigin = url;
   }
 
   public set targetWindow(window: Window) {
-    if (this._isConnected || this._isConnecting) {
+    if (this.#isConnected || this.#isConnecting) {
       throw new Error(
         "targetWindow cannot be set while connectiong or already connected."
       );
     }
-    this._targetWindow = window;
+    this.#targetWindow = window;
   }
 
   public set authKey(key: string) {
-    if (this._isConnected || this._isConnecting) {
+    if (this.#isConnected || this.#isConnecting) {
       throw new Error(
         "targetIdentity cannot be set while connectiong or already connected."
       );
     }
-    this._authKey = key;
+    this.#authKey = key;
   }
 
-  private get _targetHost() {
-    const url = new URL(this._targetOrigin!);
+  get #targetHost() {
+    if (!this.#targetOrigin) return null
+    const url = new URL(this.#targetOrigin);
     return `${url.protocol}//${url.host}`;
+  }
+
+  public get isConnected() {
+    return this.#isConnected
   }
 
   constructor(
@@ -57,9 +62,9 @@ export default class MessagePipe {
     authKey?: string,
     timeout: number = 10
   ) {
-    if (targetWindow) this._targetWindow = targetWindow;
-    if (targetOrigin) this._targetOrigin = targetOrigin;
-    if (authKey) this._authKey = authKey;
+    if (targetWindow) this.#targetWindow = targetWindow;
+    if (targetOrigin) this.#targetOrigin = targetOrigin;
+    if (authKey) this.#authKey = authKey;
     this.timeout = timeout;
   }
 
@@ -67,14 +72,14 @@ export default class MessagePipe {
    * Handles new message arrival.
    * @param {any} event - the postMessage event object.
    */
-  private _listenerInner(event: MessageEvent) {
+  #listenerInner(event: MessageEvent) {
     // verify message origin
-    if (event.origin == this._targetHost) {
+    if (event.origin == this.#targetHost) {
       let request: PipeRequest;
       try {
         request = JSON.parse(event.data) as PipeRequest;
       } catch {
-        this._logNow({
+        this.#logNow({
           message: `Unparsable event data received from ${event.origin}`,
           severity: "warning",
           data: event.data,
@@ -82,15 +87,15 @@ export default class MessagePipe {
         return;
       }
       const cmd = request.command;
-      this._logNow({
+      this.#logNow({
         message: `Message received! ${request.requestId} (${cmd.method})`,
         data: event,
       });
       if ([":>hello", ":>hi"].includes(cmd.method)) {
         // check authorization key (there can be more than one window that will attempt to write same channel in such case trusted sides can use authKey)
-        if ((this._authKey || cmd.params?.authKey) && cmd.params?.authKey !== this._authKey) {
-          this._logNow({
-            message: `Handshake FAILED. Incomming authKey '${cmd.params?.authKey}' is different than expected '${this._authKey}'!' `,
+        if ((this.#authKey || cmd.params?.authKey) && cmd.params?.authKey !== this.#authKey) {
+          this.#logNow({
+            message: `Handshake FAILED. Incomming authKey '${cmd.params?.authKey}' is different than expected '${this.#authKey}'!' `,
           });
           return;
         }        
@@ -100,29 +105,29 @@ export default class MessagePipe {
             {
               method: ":>hi",
               params: {
-                authKey: this._authKey,
+                authKey: this.#authKey,
               },
             },
             this
           );
-          this._sendNow(hiRequest);
+          this.#sendNow(hiRequest);
         }
         // CONNECTED!
         // when any message received set connected flag.
-        this._isConnected = true;
-        this._isConnecting = false;
-        this._logNow({
+        this.#isConnected = true;
+        this.#isConnecting = false;
+        this.#logNow({
           message: `Pipe ${window.location.href} received handshake form ${event.origin}`
         })
       } else {
-        if (!this._isConnected) {
-          this._logNow({
+        if (!this.#isConnected) {
+          this.#logNow({
             message:
               "Received payload message before connection was established!",
             data: event,
           });
         } else if (cmd.method === ":>response") {
-          this._processResponse(new PipeResponse(request));
+          this.#processResponse(new PipeResponse(request));
         } else if (typeof this.onReceived === "function") {
           const received = new PipeReceivedCommand(request, this);
           // when non 'hello' message received process payload.
@@ -136,25 +141,25 @@ export default class MessagePipe {
    * Establishes pipe connection, and processed send queue;
    * */
   connect() {
-    if (!this._targetOrigin)
+    if (!this.#targetOrigin)
       throw new Error("Cannot connect: please specify targetOrigin");
-    if (!this._targetWindow)
+    if (!this.#targetWindow)
       throw new Error("Cannot connect: please specify targetWindow");
 
     return new Promise((resolve, reject) => {
       const __raiseConnectionError = (errorMessage: string) => {
         // when time out reached, throw an exception;
-        clearInterval(this._connectionTimer);
-        this._isConnected = false;
-        this._isConnecting = false;
+        clearInterval(this.#connectionTimer);
+        this.#isConnected = false;
+        this.#isConnecting = false;
         const log: LogItem = {
           message: errorMessage,
           severity: "error",
           data: {
-            errorStack: this._connectionErrorStack,
+            errorStack: this.#connectionErrorStack,
           },
         };
-        this._logNow(log);
+        this.#logNow(log);
         if (this.beVerbose) {
           console.error(log.message, log.data);
         }
@@ -162,34 +167,34 @@ export default class MessagePipe {
         reject(errorMessage);
       };
 
-      if (this._isConnected) __raiseConnectionError("Already connected");
-      this._connectedStartedOn = new Date();
-      this._isConnecting = true;
-      window.addEventListener("message", this._listener, false);
+      if (this.#isConnected) __raiseConnectionError("Already connected");
+      this.#connectedStartedOn = new Date();
+      this.#isConnecting = true;
+      window.addEventListener("message", this.#listener, false);
 
       // awaits for window to be initialized by sending hello message
-      this._connectionTimer = setInterval(() => {
+      this.#connectionTimer = setInterval(() => {
         if (
-          new Date().getTime() - this._connectedStartedOn!.getTime() >=
-          this.timeout
+          new Date().getTime() - this.#connectedStartedOn!.getTime() >=
+          this.timeout*1000
         ) {
           // when time out reached, throw an exception;
-          clearInterval(this._connectionTimer);
-          this._isConnected = false;
-          this._isConnecting = false;
+          clearInterval(this.#connectionTimer);
+          this.#isConnected = false;
+          this.#isConnecting = false;
           __raiseConnectionError(
-            `Connection timeout! Target origin ('${this._targetOrigin}') did not responded with "hello" message.`
+            `Connection timeout! Target origin ('${this.#targetOrigin}') did not responded with "hello" message.`
           );
-        } else if (this._isConnected) {
+        } else if (this.#isConnected) {
           // CONNECTED!
-          // when 'hello' message received from other side _isConnected flag will be set and connection process can be terminated.
-          clearInterval(this._connectionTimer);
+          // when 'hello' message received from other side #isConnected flag will be set and connection process can be terminated.
+          clearInterval(this.#connectionTimer);
 
           // all queued messges will be processed now as connection is establised:
-          this._requestQueue.forEach((request) => this._sendNow(request));
+          this.#requestQueue.forEach((request) => this.#sendNow(request));
 
           // start request queue flush timer
-          this._flushTimer = setInterval(() => this._flushRequestQueue(), 1000)
+          this.#flushTimer = setInterval(() => this.#flushRequestQueue(), 1000)
 
           // call connected callback
           if (this.onConnected) this.onConnected(this);
@@ -201,9 +206,9 @@ export default class MessagePipe {
           try {
             // NOT FRAME SECNARIO ONLY:
             // When parent origin is different from specified targetOrigin DOM exception will occur in asyc manner when calling postMessage().
-            // To detect this scenario and handle an error synchronously origin check is done before _sendNow can be executed.
+            // To detect this scenario and handle an error synchronously origin check is done before #sendNow can be executed.
             // Supressed error message: VM878:1 Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('http://some.domain') does not match the recipient window's origin ('https://some.domain1').
-            if (window.top === window && this._targetWindow === window) {
+            if (window.top === window && this.#targetWindow === window) {
               // when window is not embedded in iframe
               // and target window is not iframe (is same as window)
               __raiseConnectionError(
@@ -215,14 +220,14 @@ export default class MessagePipe {
               {
                 method: ":>hello",
                 params: {
-                  authKey: this._authKey,
+                  authKey: this.#authKey,
                 },
               },
               this
             );
-            this._sendNow(helloRequest);
+            this.#sendNow(helloRequest);
           } catch (error: unknown) {
-            this._connectionErrorStack.push(error as Error);
+            this.#connectionErrorStack.push(error as Error);
             reject(error);
           }
         }
@@ -234,11 +239,11 @@ export default class MessagePipe {
    * Sends message immediately to targetWindow.
    * @param {object} command - the command object.
    * */
-  private _sendNow(request: PipeRequest) {
+  #sendNow(request: PipeRequest) {
     const payload = JSON.stringify(request);
-    this._targetWindow?.postMessage(payload, this._targetOrigin!);
+    this.#targetWindow?.postMessage(payload, this.#targetOrigin!);
     request.isSent = true;
-    this._logNow({
+    this.#logNow({
       message: `Sending message ${request.requestId} (${request.command.method})`,
       data: {
         payload,
@@ -251,24 +256,24 @@ export default class MessagePipe {
    * @param command - the command object.
    */
   send(command: PipeCommand) {
-    if (!this._isConnected && !this._isConnecting) {
+    if (!this.#isConnected && !this.#isConnecting) {
       const log: LogItem = {
         message:
           "Cannot send any message because pipe is not connected. Use .connect() method and check for expections.",
         severity: "error",
       };
-      this._logNow(log);
+      this.#logNow(log);
       // throw because is not connected and not attemting to connect.
       return Promise.reject(log.message);
     }
 
     // push command to queue, that will be procesessed when connected.
     const request = new PipeRequest(command, this);
-    this._requestQueue.set(request.requestId, request);
+    this.#requestQueue.set(request.requestId, request);
 
-    if (this._isConnected) {
+    if (this.#isConnected) {
       // set command to connected pipe
-      this._sendNow(request);
+      this.#sendNow(request);
     }
 
     return request.promise;
@@ -289,32 +294,32 @@ export default class MessagePipe {
     });
   }
 
-  private _processResponse(response: PipeResponse) {
-    const sourceRequest = this._requestQueue.get(response.sourceRequestId);
+  #processResponse(response: PipeResponse) {
+    const sourceRequest = this.#requestQueue.get(response.sourceRequestId);
     if (!sourceRequest)
       throw new Error(
         `An error occured while processing response '${response.request.requestId}'. Cannot find corresponding source request ${response.sourceRequestId}`
       );
     sourceRequest.responseResolve(response.data);
     sourceRequest.isResponded = true;
-    this._flushRequestQueue();
+    this.#flushRequestQueue();
   }
 
-  private _flushRequestQueue() {
-    // console.log(Array.from(this._requestQueue))
-    if (this._requestQueue.size === 0) return
-    this._requestQueue.forEach((r) => {
+  #flushRequestQueue() {
+    // console.log(Array.from(this.#requestQueue))
+    if (this.#requestQueue.size === 0) return
+    this.#requestQueue.forEach((r) => {
       const now = new Date();
       if (r.willTimeoutOn && r.willTimeoutOn <= now) {
         r.responseReject(`Request (${r.requestId}) response timeout reached!`)
         r.isTimeouted = true
       }
       if ((r.isSent && r.isResponded) || r.isTimeouted)
-        this._requestQueue.delete(r.requestId);
+        this.#requestQueue.delete(r.requestId);
     });
   }
 
-  private _logNow(logItem: LogItem) {
+  #logNow(logItem: LogItem) {
     if (!logItem.severity) logItem.severity = "info";
     if (this.onLog) this.onLog(logItem);
   }
@@ -323,12 +328,12 @@ export default class MessagePipe {
    * Deconstruct pipe and releases its resources.
    * */
   dispose() {
-    clearInterval(this._connectionTimer);
-    clearInterval(this._flushTimer);
-    window.removeEventListener("message", this._listener, false);
-    this._connectionErrorStack = [];
-    this._targetWindow = null;
-    this._requestQueue.clear();
+    clearInterval(this.#connectionTimer);
+    clearInterval(this.#flushTimer);
+    window.removeEventListener("message", this.#listener, false);
+    this.#connectionErrorStack = [];
+    this.#targetWindow = null;
+    this.#requestQueue.clear();
   }
 }
 
