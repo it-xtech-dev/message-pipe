@@ -7,6 +7,7 @@ export default defineConfig({
   build: {
     target: 'es2019',
     minify: true,
+    sourcemap: true,
     lib: {
       entry: 'src/WindowPipe.ts',
       name: 'WindowPipe',
