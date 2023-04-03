@@ -1,5 +1,5 @@
-# message-pipe
-Browser window to window two-way communication based on window.postMessage.
+# window-pipe
+Browser window to window two-way communication based on `window.postMessage()`.
 
 Main features:
 - Seamless asychronus communication between pages in same or different domain.
@@ -8,9 +8,10 @@ Main features:
 - Promise based connection establishing (handshake).
 - Timeout management on connection and request level.
 - Universal request command signature (method, parametes, timeout)
+- Request buffering until pipe connected.
 - Promise base request sending with commands to "other side" recipient.
 - Incomming requests listerner.
-- Possiblity to send re
+- Promise based posiblity to receive responses to send requests.
 
 # Getting started
 
