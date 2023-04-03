@@ -23,7 +23,7 @@ Below examples show communication between "Parent" page that embeds iframe with 
 
 import WindowPipe from 'https://cdn.jsdelivr.net/npm/window-pipe@latest'
 
-```
+``` js
 // *** PIPE SETUP
 // create window pipe instance
 const pipe = new WindowPipe
@@ -60,7 +60,7 @@ setInterval(() => {
 
 ## Child (frame)
 
-```
+``` js
 import WindowPipe from 'https://cdn.jsdelivr.net/npm/window-pipe@latest'
 
 // *** PIPE SETUP
