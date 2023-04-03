@@ -17,7 +17,7 @@ Main features:
 
 To start communication between two browser windows you need reference to each window object. On each end of communication page has to reference window-pipe lib, and have to establish a connection. Pages can be loaded form different domains.
 
-Below example shows communication between "Parent" page that embeds iframe with "Child" window. Web module imports have been used in node enviroment replace them with `import WindowPipe from 'window-pipe'`
+Below example shows communication between "Parent" page that embeds iframe with "Child" window. Web module imports have been used. In node enviroment replace them with `import WindowPipe from 'window-pipe'`
 
 ## Parent
 
