@@ -7,11 +7,11 @@ Main features:
 - Below 10kB before gzipping.
 - Promise based connection establishing (handshake).
 - Timeout management on connection and request level.
-- Universal request command signature (method, parametes, timeout)
+- Universal request command signature (method, parameters, timeout)
 - Request buffering until pipe connected.
-- Promise base request sending with commands to "other side" recipient.
 - Incomming requests listerner.
-- Promise based posiblity to receive responses to send requests.
+- Promise based request sending with commands to "other side" recipient.
+- Posiblity to receive responses to send requests.
 
 # Getting started
 
@@ -99,5 +99,7 @@ setInterval(() => {
 # Live example
 
 https://codepen.io/xtech-dev/full/Exeqjxm
+
 Parent: https://codepen.io/xtech-dev/pen/Exeqjxm
+
 Child: https://codepen.io/xtech-dev/full/Exeqjxm
