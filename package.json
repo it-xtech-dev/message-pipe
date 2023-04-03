@@ -3,7 +3,7 @@
   "repository": {
     "url": "https://github.com/it-xtech-dev/message-pipe"
   },
-  "version": "0.4.1",
+  "version": "0.4.2",
   "type": "module",
   "main": "dist/window-pipe.es.js",
   "module": "dist/window-pipe.es.js",

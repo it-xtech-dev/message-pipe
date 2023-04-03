@@ -290,8 +290,8 @@ export default class MessagePipe {
       params: {
         requestId,
         data,
-        timeout: 0
       },
+      timeout: 0
     });
   }
 
