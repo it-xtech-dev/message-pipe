@@ -47,13 +47,13 @@ export default class MessagePipe {
   }
 
   get #targetHost() {
-    if (!this.#targetOrigin) return null
+    if (!this.#targetOrigin) return null;
     const url = new URL(this.#targetOrigin);
     return `${url.protocol}//${url.host}`;
   }
 
   public get isConnected() {
-    return this.#isConnected
+    return this.#isConnected;
   }
 
   constructor(
@@ -93,13 +93,18 @@ export default class MessagePipe {
       });
       if ([":>hello", ":>hi"].includes(cmd.method)) {
         // check authorization key (there can be more than one window that will attempt to write same channel in such case trusted sides can use authKey)
-        if ((this.#authKey || cmd.params?.authKey) && cmd.params?.authKey !== this.#authKey) {
+        if (
+          (this.#authKey || cmd.params?.authKey) &&
+          cmd.params?.authKey !== this.#authKey
+        ) {
           this.#logNow({
-            message: `Handshake FAILED. Incomming authKey '${cmd.params?.authKey}' is different than expected '${this.#authKey}'!' `,
+            message: `Handshake FAILED. Incomming authKey '${
+              cmd.params?.authKey
+            }' is different than expected '${this.#authKey}'!' `,
           });
           return;
-        }        
-        // respond to 'hello' message        
+        }
+        // respond to 'hello' message
         if (cmd.method === ":>hello") {
           const hiRequest = new PipeRequest(
             {
@@ -117,8 +122,8 @@ export default class MessagePipe {
         this.#isConnected = true;
         this.#isConnecting = false;
         this.#logNow({
-          message: `Pipe ${window.location.href} received handshake form ${event.origin}`
-        })
+          message: `Pipe ${window.location.href} received handshake form ${event.origin}`,
+        });
       } else {
         if (!this.#isConnected) {
           this.#logNow({
@@ -176,14 +181,16 @@ export default class MessagePipe {
       this.#connectionTimer = setInterval(() => {
         if (
           new Date().getTime() - this.#connectedStartedOn!.getTime() >=
-          this.timeout*1000
+          this.timeout * 1000
         ) {
           // when time out reached, throw an exception;
           clearInterval(this.#connectionTimer);
           this.#isConnected = false;
           this.#isConnecting = false;
           __raiseConnectionError(
-            `Connection timeout! Target origin ('${this.#targetOrigin}') did not responded with "hello" message.`
+            `Connection timeout! Target origin ('${
+              this.#targetOrigin
+            }') did not responded with "hello" message.`
           );
         } else if (this.#isConnected) {
           // CONNECTED!
@@ -194,7 +201,7 @@ export default class MessagePipe {
           this.#requestQueue.forEach((request) => this.#sendNow(request));
 
           // start request queue flush timer
-          this.#flushTimer = setInterval(() => this.#flushRequestQueue(), 1000)
+          this.#flushTimer = setInterval(() => this.#flushRequestQueue(), 1000);
 
           // call connected callback
           if (this.onConnected) this.onConnected(this);
@@ -291,7 +298,7 @@ export default class MessagePipe {
         requestId,
         data,
       },
-      timeout: 0
+      timeout: 0,
     });
   }
 
@@ -308,12 +315,12 @@ export default class MessagePipe {
 
   #flushRequestQueue() {
     // console.log(Array.from(this.#requestQueue))
-    if (this.#requestQueue.size === 0) return
+    if (this.#requestQueue.size === 0) return;
     this.#requestQueue.forEach((r) => {
       const now = new Date();
       if (r.willTimeoutOn && r.willTimeoutOn <= now) {
-        r.responseReject(`Request (${r.requestId}) response timeout reached!`)
-        r.isTimeouted = true
+        r.responseReject(`Request (${r.requestId}) response timeout reached!`);
+        r.isTimeouted = true;
       }
       if ((r.isSent && r.isResponded) || r.isTimeouted)
         this.#requestQueue.delete(r.requestId);
@@ -345,7 +352,7 @@ export interface PipeCommand {
   timeout?: number;
 }
 
-class PipeReceivedCommand implements PipeCommand {
+export class PipeReceivedCommand implements PipeCommand {
   #receivedData: PipeRequest;
   #pipe: MessagePipe;
 
@@ -391,7 +398,9 @@ class PipeRequest {
       this.promise = Promise.resolve();
       return;
     }
-    this.willTimeoutOn = new Date(new Date().getTime() + (command.timeout ?? pipe.timeout)* 1000);
+    this.willTimeoutOn = new Date(
+      new Date().getTime() + (command.timeout ?? pipe.timeout) * 1000
+    );
     // use command level defined id or autogenerate when not specified
     this.requestId = command.requestId ?? getRequestId();
     this.promise = new Promise((resolve, reject) => {
@@ -411,7 +420,7 @@ export class PipeResponse {
   }
 
   get data() {
-    return this.request.command.params?.data
+    return this.request.command.params?.data;
   }
 }
 
