@@ -383,7 +383,7 @@ class PipeRequest {
   requestId: string = getRequestId();
   responseResolve!: (response: PipeResponse) => void;
   responseReject!: (error: string) => void;
-  promise: Promise<PipeResponse | void>;
+  promise: Promise<PipeResponse | undefined>;
   isSent?: boolean;
   isResponded?: boolean;
   isTimeouted?: boolean;
@@ -395,7 +395,7 @@ class PipeRequest {
       // when requestId in command is set to null it is assumed that request does not awaits for response so it should be marked as responded immediatly and resolved
       this.isResponded = true;
       this.willTimeoutOn = undefined;
-      this.promise = Promise.resolve();
+      this.promise = Promise.resolve(undefined);
       return;
     }
     this.willTimeoutOn = new Date(
