@@ -308,7 +308,7 @@ export default class MessagePipe {
       throw new Error(
         `An error occured while processing response '${response.request.requestId}'. Cannot find corresponding source request ${response.sourceRequestId}`
       );
-    sourceRequest.responseResolve(response.data);
+    sourceRequest.responseResolve(response);
     sourceRequest.isResponded = true;
     this.#flushRequestQueue();
   }
@@ -381,9 +381,9 @@ export class PipeReceivedCommand implements PipeCommand {
 class PipeRequest {
   command: PipeCommand;
   requestId: string = getRequestId();
-  responseResolve: (data: any) => void = () => {};
-  responseReject: (error: string) => void = () => {};
-  promise: Promise<any>;
+  responseResolve!: (response: PipeResponse) => void;
+  responseReject!: (error: string) => void;
+  promise: Promise<PipeResponse | void>;
   isSent?: boolean;
   isResponded?: boolean;
   isTimeouted?: boolean;
@@ -403,7 +403,7 @@ class PipeRequest {
     );
     // use command level defined id or autogenerate when not specified
     this.requestId = command.requestId ?? getRequestId();
-    this.promise = new Promise((resolve, reject) => {
+    this.promise = new Promise<PipeResponse>((resolve, reject) => {
       this.responseResolve = resolve;
       this.responseReject = reject;
     });
