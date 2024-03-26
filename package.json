@@ -23,7 +23,7 @@
     "dev": "vite",
     "build": "vue-tsc && vite build",
     "typeme": "vue-tsc ./src/MessagePipe.ts --declaration --emitDeclarationOnly --esModuleInterop --outDir ./src/types --target esnext",
-    "packme": "rimraf ./packed/* && npm pack --pack-destination ./packed",
+    "packme": "rimraf --glob ./packed/* && npm pack --pack-destination ./packed",
     "preview": "vite preview"
   },
   "devDependencies": {
