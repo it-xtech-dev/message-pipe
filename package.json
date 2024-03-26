@@ -3,11 +3,11 @@
   "repository": {
     "url": "https://github.com/it-xtech-dev/message-pipe"
   },
-  "version": "0.5.2",
+  "version": "0.6.0",
   "type": "module",
   "main": "dist/window-pipe.es.js",
-  "module": "dist/window-pipe.es.js",
-  "types": "src/types/index.d.ts",
+  "module": "./dist/window-pipe.es.js",
+  "types": "./src/types/index.d.ts",
   "files": [
     "dist/*",
     "src/*"
@@ -15,7 +15,8 @@
   "exports": {
     ".": {
       "import": "./dist/window-pipe.es.js",
-      "require": "./dist/window-pipe.cjs.js"
+      "require": "./dist/window-pipe.cjs.js",
+      "types": "./src/types/index.d.ts"
     }
   },
   "scripts": {
@@ -27,7 +28,7 @@
   },
   "devDependencies": {
     "vue": "^3.2.47",
-    "vue-router": "^4.1.6",    
+    "vue-router": "^4.1.6",
     "@vitejs/plugin-vue": "^4.1.0",
     "rimraf": "^4.4.1",
     "typescript": "^4.9.3",
