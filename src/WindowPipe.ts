@@ -1,4 +1,4 @@
-export default class MessagePipe {
+export default class WindowPipe {
   #targetWindow: Window | null = null;
   #targetOrigin: string | null = null;
   #authKey: string | null = null;
@@ -15,7 +15,7 @@ export default class MessagePipe {
   timeout: number;
 
   public beVerbose = false;
-  public onConnected: ((pipe: MessagePipe) => void) | null = null;
+  public onConnected: ((pipe: WindowPipe) => void) | null = null;
   public onReceived: ((cmd: PipeReceivedCommand) => void) | null = null;
   public onLog: ((logItem: LogItem) => void) | null = null;
 
@@ -291,7 +291,7 @@ export default class MessagePipe {
    * @param requestId - the responded command requestId
    * @param data - the reponse data
    */
-  respond(requestId: string, data: any) {
+  respond(requestId: string, data?: any) {
     this.send({
       method: ":>response",
       params: {
@@ -349,14 +349,17 @@ export interface PipeCommand {
   method: string;
   params?: Record<string, any>;
   requestId?: string | null;
+  /**
+   * time in miliseconds that command will wait for response. Use 0 to resolve immediately without waiting for response.
+   */
   timeout?: number;
 }
 
 export class PipeReceivedCommand implements PipeCommand {
   #receivedData: PipeRequest;
-  #pipe: MessagePipe;
+  #pipe: WindowPipe;
 
-  constructor(receivedData: PipeRequest, pipe: MessagePipe) {
+  constructor(receivedData: PipeRequest, pipe: WindowPipe) {
     this.#receivedData = receivedData;
     this.#pipe = pipe;
   }
@@ -373,7 +376,7 @@ export class PipeReceivedCommand implements PipeCommand {
     return this.#receivedData.requestId;
   }
 
-  respondWith(data: any) {
+  respondWith(data?: any) {
     this.#pipe.respond(this.requestId, data);
   }
 }
@@ -389,10 +392,10 @@ class PipeRequest {
   isTimeouted?: boolean;
   willTimeoutOn?: Date;
 
-  constructor(command: PipeCommand, pipe: MessagePipe) {
+  constructor(command: PipeCommand, pipe: WindowPipe) {
     this.command = command;
     if (command.timeout === 0) {
-      // when requestId in command is set to null it is assumed that request does not awaits for response so it should be marked as responded immediatly and resolved
+      // when requestId in command is set to 0 it is assumed that request does not awaits for response so it should be marked as responded immediatly and resolved
       this.isResponded = true;
       this.willTimeoutOn = undefined;
       this.promise = Promise.resolve(undefined);

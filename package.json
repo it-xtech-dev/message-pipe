@@ -3,11 +3,11 @@
   "repository": {
     "url": "https://github.com/it-xtech-dev/message-pipe"
   },
-  "version": "0.6.0",
+  "version": "1.0.0",
   "type": "module",
   "main": "dist/window-pipe.es.js",
   "module": "./dist/window-pipe.es.js",
-  "types": "./src/types/index.d.ts",
+  "types": "./src/types/WindowPipe.d.ts",
   "files": [
     "dist/*",
     "src/*"
@@ -16,13 +16,13 @@
     ".": {
       "import": "./dist/window-pipe.es.js",
       "require": "./dist/window-pipe.cjs.js",
-      "types": "./src/types/index.d.ts"
+      "types": "./src/types/WindowPipe.d.ts"
     }
   },
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",
-    "typeme": "vue-tsc ./src/MessagePipe.ts --declaration --emitDeclarationOnly --esModuleInterop --outDir ./src/types --target esnext",
+    "typeme": "vue-tsc ./src/WindowPipe.ts --declaration --emitDeclarationOnly --esModuleInterop --outDir ./src/types --target esnext",
     "packme": "rimraf --glob ./packed/* && npm pack --pack-destination ./packed",
     "preview": "vite preview"
   },
